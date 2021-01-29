@@ -256,3 +256,14 @@ func (c *Client) DeleteRecord(indexName string, id string) error {
 	}
 	return nil
 }
+
+// Count 获取数据条数
+func (c *Client) Count(indexName string) (count int, err error) {
+	if len(indexName) == 0 {
+		return 0, fmt.Errorf("index can not be empty")
+	}
+
+	response := new(ResponseCountRecord)
+	err = HTTPRequest("GET", c.addr + indexName + "/_count", "", OKCode, response)
+	return response.Count, err
+}

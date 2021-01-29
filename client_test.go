@@ -138,3 +138,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 		t.Logf(err.Error())
 	}
 }
+
+func TestClient_Count(t *testing.T) {
+	c, _ := NewClient("http://192.168.83.138:9200/")
+	t.Log(c.Count("eth_transaction"))
+}

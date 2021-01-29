@@ -92,3 +92,8 @@ type IndexInfo struct {
 type RequestFromBatchAddRecord struct {
 	Index IndexInfo `json:"index"`
 }
+
+// ResponseCountRecord 数据条数
+type ResponseCountRecord struct {
+	Count int `json:"count"`
+}
