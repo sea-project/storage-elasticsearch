@@ -148,7 +148,6 @@ func (c *Client) BatchAddRecord(indexName string, arrID, requestBody []string) (
 
 	// http请求
 	result := new(ResponseBatchAddRecord)
-	fmt.Println(param)
 	err = HTTPRequest("POST", c.addr+"_bulk", param, OKCode, result)
 	if err != nil {
 		return 0, err
