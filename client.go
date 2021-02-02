@@ -98,7 +98,7 @@ func (c *Client) AddRecord(indexName, id string, requestBody string) (err error)
 	}
 	result := new(ResponseAddRecord)
 	if len(id) > 0 {
-		err = HTTPRequest("POST", c.addr+indexName+"/_doc/" + id, requestBody, 201, result)
+		err = HTTPRequest("POST", c.addr+indexName+"/_doc/"+id, requestBody, 201, result)
 	} else {
 		err = HTTPRequest("POST", c.addr+indexName+"/_doc", requestBody, 201, result)
 	}
@@ -108,15 +108,20 @@ func (c *Client) AddRecord(indexName, id string, requestBody string) (err error)
 	return nil
 }
 
-func buildBatchAddRecordReqParam(indexName string, requestBody []string) (string, error) {
-	requestFromBatchAddRecord := new(RequestFromBatchAddRecord)
-	requestFromBatchAddRecord.Index.Index = indexName
-	requestIndex, err := json.Marshal(requestFromBatchAddRecord)
-	if err != nil {
-		return "", fmt.Errorf("json.Marshal err:%v", err.Error())
-	}
+func buildBatchAddRecordReqParam(indexName string, arrID, requestBody []string) (string, error) {
 	param := ""
-	for i := 0; i < len(requestBody); i++ {
+	idLen := len(arrID)
+	bodyLen := len(requestBody)
+	requestFromBatchAddRecord := new(RequestFromBatchRecord)
+	requestFromBatchAddRecord.Index = indexName
+	for i := 0; i < bodyLen; i++ {
+		if idLen > 0 && idLen == bodyLen {
+			requestFromBatchAddRecord.ID = arrID[i]
+		}
+		requestIndex, err := json.Marshal(requestFromBatchAddRecord)
+		if err != nil {
+			return "", fmt.Errorf("json.Marshal err:%v", err.Error())
+		}
 		param += string(requestIndex)
 		param += "\n"
 		param += requestBody[i]
@@ -125,8 +130,8 @@ func buildBatchAddRecordReqParam(indexName string, requestBody []string) (string
 	return param, nil
 }
 
-// BatchAddRecord 批量添加记录
-func (c *Client) BatchAddRecord(indexName string, requestBody []string) (int, error) {
+// BatchAddRecord 批量添加记录, arrID可传nil
+func (c *Client) BatchAddRecord(indexName string, arrID, requestBody []string) (int, error) {
 	// 参数判断
 	if len(indexName) == 0 {
 		return 0, fmt.Errorf("parameter indexName error")
@@ -136,7 +141,7 @@ func (c *Client) BatchAddRecord(indexName string, requestBody []string) (int, er
 	}
 
 	// 封装请求参数
-	param, err := buildBatchAddRecordReqParam(indexName, requestBody)
+	param, err := buildBatchAddRecordReqParam(indexName, arrID, requestBody)
 	if err != nil {
 		return 0, nil
 	}
@@ -223,7 +228,7 @@ func (c *Client) QueryRecordById(indexName, id string, result interface{}) error
 
 	// http请求
 	hitsInfo := new(HitsInfo)
-	err := HTTPRequest("GET", c.addr + indexName + "/_doc/" + id, "", OKCode, hitsInfo)
+	err := HTTPRequest("GET", c.addr+indexName+"/_doc/"+id, "", OKCode, hitsInfo)
 	if err != nil {
 		return err
 	}
@@ -264,6 +269,40 @@ func (c *Client) Count(indexName string) (count int, err error) {
 	}
 
 	response := new(ResponseCountRecord)
-	err = HTTPRequest("GET", c.addr + indexName + "/_count", "", OKCode, response)
+	err = HTTPRequest("GET", c.addr+indexName+"/_count", "", OKCode, response)
 	return response.Count, err
+}
+
+// BatchDeleteRecord 根据es的id批量删除记录
+func (c *Client) BatchDeleteRecord(indexName string, id []string) error {
+	param, err := buildBatchDeleteRecordWithIDReqParam(id)
+	if err != nil {
+		return err
+	}
+	// http请求
+	result := new(ResponseBatchDeleteRecord)
+	err = HTTPRequest("POST", c.addr+indexName+"/_bulk?refresh", param, OKCode, result)
+	if err != nil {
+		return err
+	}
+	if result.Errors {
+		return fmt.Errorf("BatchDeleteRecord err")
+	}
+	return nil
+}
+
+func buildBatchDeleteRecordWithIDReqParam(id []string) (string, error) {
+	param := ""
+	num := len(id)
+	for i := 0; i < num; i++ {
+		requestFromBatchDeleteRecord := new(RequestFromBatchRecord)
+		requestFromBatchDeleteRecord.ID = id[i]
+		temp, err := json.Marshal(requestFromBatchDeleteRecord)
+		if err != nil {
+			return "", err
+		}
+		param += string(temp)
+		param += "\n"
+	}
+	return param, nil
 }

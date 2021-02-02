@@ -83,17 +83,18 @@ type ResponseDeleteRecord struct {
 	Result string `json:"result"`
 }
 
-// IndexInfo 索引名称信息
-type IndexInfo struct {
-	Index string `json:"_index"`
-}
-
-// RequestFromBatchAddRecord 批量添加记录请求Index信息
-type RequestFromBatchAddRecord struct {
-	Index IndexInfo `json:"index"`
+// RequestFromBatchRecord 批量添加记录请求Index信息
+type RequestFromBatchRecord struct {
+	ID    string `json:"_id,omitempty"`
+	Index string `json:"_index,omitempty"`
 }
 
 // ResponseCountRecord 数据条数
 type ResponseCountRecord struct {
 	Count int `json:"count"`
+}
+
+// ResponseBatchDeleteRecord 批量删除记录请求返回信息
+type ResponseBatchDeleteRecord struct {
+	Errors bool `json:"errors"`
 }
