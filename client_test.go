@@ -54,23 +54,23 @@ func TestClient_DeleteIndex(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client, _ := NewClient("http://IP:9200/")
+	client, _ := NewClient("http://192.168.83.138:9200/")
 	indexName := "userinfo"
-	err := client.AddRecord(indexName, "1", "{  \"name\": \"xtt\",  \"sex\": true,  \"age\": 30}")
+	err := client.AddRecord(indexName, "1", `{"name":"xtt","sex":2,"age":30}`)
 	if err != nil {
 		t.Logf(err.Error())
 	}
 }
 
 func TestClient_BatchAddRecord(t *testing.T) {
-	client, _ := NewClient("http://IP:9200/")
+	client, _ := NewClient("http://192.168.83.138:9200/")
 	indexName := "userinfo"
 	body := make([]string, 0)
-	body = append(body, `{ "name": "xxx", "sex": true, "age": 29}`)
-	body = append(body, `{ "name": "yyy", "sex": false, "age": 30}`)
-	n, err := client.BatchAddRecord(indexName, body)
+	body = append(body, `{"name":"xtt","sex":2,"age":30}`)
+	body = append(body, `{"name":"xtt","sex":2,"age":40}`)
+	n, err := client.BatchAddRecord(indexName, []string{"3", "4"}, body)
 	if err != nil {
-		t.Logf(err.Error())
+		t.Fatal("添加失败：", err)
 	}
 	t.Logf("%v", n)
 }
@@ -85,7 +85,7 @@ func TestClient_BatchAddRecordTest(t *testing.T) {
 			body = append(body, `{ "name": "xxx", "sex": true, "age": 29}`)
 		}
 		starttime := time.Now().UnixNano() / 1e6
-		n, err := client.BatchAddRecord(indexName, body)
+		n, err := client.BatchAddRecord(indexName, nil, body)
 		if err != nil {
 			t.Logf(err.Error())
 		}
@@ -142,4 +142,15 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_Count(t *testing.T) {
 	c, _ := NewClient("http://192.168.83.138:9200/")
 	t.Log(c.Count("eth_transaction"))
+}
+
+func TestClient_BatchDeleteRecord(t *testing.T) {
+	arrID := []string{
+		"1",
+		"2",
+	}
+	client, _ := NewClient("http://192.168.83.138:9200/")
+	indexName := "userinfo"
+	err := client.BatchDeleteRecord(indexName, arrID)
+	t.Log(err)
 }

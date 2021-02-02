@@ -113,10 +113,10 @@ func buildBatchAddRecordReqParam(indexName string, arrID, requestBody []string) 
 	idLen := len(arrID)
 	bodyLen := len(requestBody)
 	requestFromBatchAddRecord := new(RequestFromBatchRecord)
-	requestFromBatchAddRecord.Index = indexName
+	requestFromBatchAddRecord.Index.Index = indexName
 	for i := 0; i < bodyLen; i++ {
 		if idLen > 0 && idLen == bodyLen {
-			requestFromBatchAddRecord.ID = arrID[i]
+			requestFromBatchAddRecord.Index.ID = arrID[i]
 		}
 		requestIndex, err := json.Marshal(requestFromBatchAddRecord)
 		if err != nil {
@@ -148,6 +148,7 @@ func (c *Client) BatchAddRecord(indexName string, arrID, requestBody []string) (
 
 	// http请求
 	result := new(ResponseBatchAddRecord)
+	fmt.Println(param)
 	err = HTTPRequest("POST", c.addr+"_bulk", param, OKCode, result)
 	if err != nil {
 		return 0, err
@@ -295,8 +296,8 @@ func buildBatchDeleteRecordWithIDReqParam(id []string) (string, error) {
 	param := ""
 	num := len(id)
 	for i := 0; i < num; i++ {
-		requestFromBatchDeleteRecord := new(RequestFromBatchRecord)
-		requestFromBatchDeleteRecord.ID = id[i]
+		requestFromBatchDeleteRecord := new(RequestFromBatchDeleteRecordWithID)
+		requestFromBatchDeleteRecord.Delete.ID = id[i]
 		temp, err := json.Marshal(requestFromBatchDeleteRecord)
 		if err != nil {
 			return "", err
